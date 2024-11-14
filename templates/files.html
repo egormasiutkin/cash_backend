@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4 text-light">My Files</h1>
+    <div class="accordion mb-4" id="files">
+        {% for folder in folders %}
+        <div class="accordion-item border-0">
+            <h2 class="accordion-header d-flex align-items-center justify-content-between" id="headingOne">
+                <!-- Accordion Button: Takes up most of the space -->
+                <button class="accordion-button collapsed btn btn-secondary flex-grow-1 me-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne_{{ folder.foldername }}" aria-expanded="true" aria-controls="collapseOne_{{ folder.foldername }}">
+                    <h4 class="card-title text-light mb-0">{{ folder.foldername }}</h4>
+                </button>
+    
+                <!-- Download Button -->
+                <a href="{{ url_for('download', file_name=folder.foldername) }}" class="btn btn-primary me-2">Download</a>
+    
+                <!-- Delete Button -->
+                <a href="{{ url_for('delete_file', file_name=folder.foldername) }}" class="btn btn-danger">Delete</a>
+            </h2>
+          <div id="collapseOne_{{ folder.foldername }}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+            <div class="accordion-body bg-dark">
+                {% for file in folder.files %}
+                <div class="text-light">{{ file }}</div>
+                {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Select All/Deselect All functionality
+    document.getElementById('select-all').addEventListener('change', function(event) {
+        const checkboxes = document.querySelectorAll('input[name="selected_registers"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = event.target.checked;
+        });
+    });
+
+    document.getElementById('generate-form').addEventListener('submit', function(event) {
+        const selectedRegisters = document.querySelectorAll('input[name="selected_registers"]:checked');
+        if (selectedRegisters.length === 0) {
+            alert('Please select at least one register.');
+            event.preventDefault();
+            return false;
+        }
+
+        selectedRegisters.forEach(function(register) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'selected_registers';
+            input.value = register.value;
+            event.target.appendChild(input);
+        });
+    });
+    $(document).ready( function () {
+        $('#table_id').DataTable();
+    });
+</script>
+<style>
+    .content-wrapper {
+        max-width: 1200px !important; /* Adjust as needed */
+        margin: 0 auto;
+        text-align: center;
+    }
+</style>
+{% endblock %}

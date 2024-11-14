@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4 text-center text-light">Input Messages</h1>
+
+    {% if download_link %}
+        <div class="alert alert-success">
+            File processed successfully. <a href="{{ download_link }}" class="alert-link">Download the processed file here</a>.
+        </div>
+    {% endif %}
+
+    <div class="accordion mb-4" id="add_register">
+        <div class="accordion-item border-0">
+          <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button collapsed btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                <h4 class="card-title text-light">Add a New Register</h4>
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+            <div class="accordion-body bg-dark">
+                <div class="card shadow-sm mb-4" style="background-color: var(--primary-color);">
+                    <div class="card-body">
+                        <h4 class="card-title text-light">Add a New Message</h4>
+                        <form id="message-form" method="POST" action="{{ url_for('add_message') }}">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="command" class="form-label text-light">COMMAND</label>
+                                    <input type="text" class="form-control" id="command" name="command" placeholder="Enter COMMAND" value="{{ form_data['command'] if form_data else '' }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="addr_l" class="form-label text-light">ADDR_L</label>
+                                    <input type="text" class="form-control" id="addr_l" name="addr_l" placeholder="Enter ADDR_L" value="{{ form_data['addr_l'] if form_data else '' }}" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="data_l" class="form-label text-light">DATA_L</label>
+                                    <input type="text" class="form-control" id="data_l" name="data_l" placeholder="Enter DATA_L" value="{{ form_data['data_l'] if form_data else '' }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="description" class="form-label text-light">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="2" placeholder="Enter Description" required>{{ form_data['description'] if form_data else '' }}</textarea>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-secondary">Add Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4" style="background-color: var(--accent-color);">
+        <div class="card-body">
+            <h4 class="card-title text-dark">Your Actual Lines</h4>
+            <form method="POST" action="{{ url_for('generate_and_process') }}" id="generate-form">
+                <div class="mb-3">
+                    <input type="checkbox" id="select-all" /> <label for="select-all">Select All/Deselect All</label>
+                </div>
+                <table id="table_id" class="table table-hover">
+                    <thead style="background-color: var(--secondary-color); color: var(--accent-color);">
+                        <tr>
+                            <th>Select</th>
+                            <th>COMMAND</th>
+                            <th>ADDR_L</th>
+                            <th>DATA_L</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="message-list">
+                        {% for message in messages %}
+                        <tr>
+                            <td><input type="checkbox" name="selected_messages" value="{{ message.id }}"></td>
+                            <td>{{ message.command }}</td>
+                            <td>{{ message.addr_l }}</td>
+                            <td>{{ message.data_l }}</td>
+                            <td>{{ message.description }}</td>
+                            <td>
+                                <a href="{{ url_for('edit_message', message_id=message.id) }}" class="btn btn-sm btn-warning me-1">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h4 class="card-title text-light mt-4">Generate and Process File</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="file_format" class="form-label text-light">Save as</label>
+                        <select class="form-select" id="file_format" name="file_format" required>
+                            <option value="json" {% if form_data and form_data['file_format'] == 'json' %}selected{% endif %}>JSON</option>
+                            <option value="txt" {% if form_data and form_data['file_format'] == 'txt' %}selected{% endif %}>TXT</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h5 class="mt-4 text-light">Script Arguments</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="i2c_dev_addr" class="form-label text-light">I2C Device Address</label>
+                        <input type="text" class="form-control" id="i2c_dev_addr" name="i2c_dev_addr" placeholder="Enter I2C Device Address" value="{{ form_data['i2c_dev_addr'] if form_data else '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="i2c_freq" class="form-label text-light">I2C Frequency</label>
+                        <input type="text" class="form-control" id="i2c_freq" name="i2c_freq" placeholder="Enter I2C Frequency" value="{{ form_data['i2c_freq'] if form_data else '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="fpga_freq" class="form-label text-light">FPGA Frequency</label>
+                        <input type="text" class="form-control" id="fpga_freq" name="fpga_freq" placeholder="Enter FPGA Frequency" value="{{ form_data['fpga_freq'] if form_data else '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="control_byte" class="form-label text-light">Control Byte</label>
+                        <input type="text" class="form-control" id="control_byte" name="control_byte" placeholder="Enter Control Byte" value="{{ form_data['control_byte'] if form_data else '' }}" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success mt-3">Generate and Process File</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Select All/Deselect All functionality
+    document.getElementById('select-all').addEventListener('change', function(event) {
+        const checkboxes = document.querySelectorAll('input[name="selected_messages"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = event.target.checked;
+        });
+    });
+
+    document.getElementById('generate-form').addEventListener('submit', function(event) {
+        const selectedMessages = document.querySelectorAll('input[name="selected_messages"]:checked');
+        if (selectedMessages.length === 0) {
+            alert('Please select at least one message.');
+            event.preventDefault();
+            return false;
+        }
+
+        selectedMessages.forEach(function(message) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'selected_messages';
+            input.value = message.value;
+            event.target.appendChild(input);
+        });
+    });
+    $(document).ready( function () {
+    $('#table_id').DataTable();})
+</script>
+{% endblock %}

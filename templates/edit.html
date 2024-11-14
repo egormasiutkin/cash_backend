@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Edit Message</h1>
+<form method="POST" action="{{ url_for('edit_message', message_id=message.id) }}" id="edit-message-form">
+    <div class="mb-3">
+        <label for="command" class="form-label">COMMAND</label>
+        <input type="text" class="form-control" id="command" name="command" value="{{ message.command }}" required>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="addr_h" class="form-label">ADDR_H</label>
+            <input type="text" class="form-control" id="addr_h" name="addr_h" value="{{ message.addr_h }}">
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="addr_l" class="form-label">ADDR_L</label>
+            <input type="text" class="form-control" id="addr_l" name="addr_l" value="{{ message.addr_l }}" required>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="data_h" class="form-label">DATA_H</label>
+            <input type="text" class="form-control" id="data_h" name="data_h" value="{{ message.data_h }}">
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="data_l" class="form-label">DATA_L</label>
+            <input type="text" class="form-control" id="data_l" name="data_l" value="{{ message.data_l }}" required>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="2" required>{{ message.description }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Message</button>
+</form>
+
+<script>
+    document.getElementById('edit-message-form').addEventListener('submit', function(event) {
+        const addrH = document.getElementById('addr_h').value;
+        const addrL = document.getElementById('addr_l').value;
+        const dataH = document.getElementById('data_h').value;
+        const dataL = document.getElementById('data_l').value;
+
+        // If ADDR_H or DATA_H is provided, ensure both H and L parts are filled for 16-bit I2C
+        if ((addrH && !addrL) || (!addrH && addrL)) {
+            alert('If you provide ADDR_H, you must also provide ADDR_L (and vice versa).');
+            event.preventDefault();
+            return false;
+        }
+
+        if ((dataH && !dataL) || (!dataH && dataL)) {
+            alert('If you provide DATA_H, you must also provide DATA_L (and vice versa).');
+            event.preventDefault();
+            return false;
+        }
+
+        // Ensure at least ADDR_L and DATA_L are provided for 8-bit I2C
+        if (!addrL && !dataL) {
+            alert('You must provide at least ADDR_L and DATA_L.');
+            event.preventDefault();
+            return false;
+        }
+    });
+</script>
+{% endblock %}

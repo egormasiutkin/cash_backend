@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4 text-light">Register Map</h1>
+
+    {% if download_link %}
+        <div class="alert alert-success">
+            File processed successfully. <a href="{{ download_link }}" class="alert-link">Download the processed file here</a>.
+        </div>
+    {% endif %}
+    <div class="accordion mb-4" id="add_register">
+        <div class="accordion-item border-0">
+          <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button collapsed btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                <h4 class="card-title text-light">Add a New Register</h4>
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+            <div class="accordion-body bg-dark">
+                <div class="card shadow-sm mb-4" style="background-color: var(--primary-color);">
+                    <div class="card-body">
+                        <form id="register-form" method="POST" action="{{ url_for('add_register') }}">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="register_name" class="form-label text-light">REGISTER_NAME</label>
+                                    <input type="text" class="form-control" id="register_name" name="register_name" placeholder="Enter Register Name" value="{{ form_data['register_name'] if form_data else '' }}" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label for="offset" class="form-label text-light">OFFSET</label>
+                                    <input type="text" class="form-control" id="offset" name="offset" placeholder="Enter Offset" value="{{ form_data['offset'] if form_data else '' }}" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label for="lsb" class="form-label text-light">LSB</label>
+                                    <input type="text" class="form-control" id="lsb" name="lsb" placeholder="Enter LSB" value="{{ form_data['lsb'] if form_data else '' }}" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label for="width" class="form-label text-light">WIDTH</label>
+                                    <input type="text" class="form-control" id="width" name="width" placeholder="Enter Width" value="{{ form_data['width'] if form_data else '' }}" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="field" class="form-label text-light">FIELD</label>
+                                    <input type="text" class="form-control" id="field" name="field" placeholder="Enter Field" value="{{ form_data['field'] if form_data else '' }}" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label for="init_value" class="form-label text-light">INIT_VALUE</label>
+                                    <input type="text" class="form-control" id="init_value" name="init_value" placeholder="Enter Init Value" value="{{ form_data['init_value'] if form_data else '' }}" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label for="access_mode" class="form-label text-light">ACESS_MODE</label>
+                                    <input type="text" class="form-control" id="access_mode" name="access_mode" placeholder="Enter Access Mode" value="{{ form_data['access_mode'] if form_data else '' }}" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label for="tag" class="form-label text-light">TAG</label>
+                                    <input type="text" class="form-control" id="tag" name="tag" placeholder="Enter TAG" value="{{ form_data['tag'] if form_data else '' }}" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-9 col-12 mb-3">
+                                    <label for="description" class="form-label text-light">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="5" placeholder="Enter Description" required>{{ form_data['description'] if form_data else '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2 mb-3 d-flex flex-column-reverse ">
+                                    <button type="submit" class="btn btn-primary" >Add Register</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+    </div>
+    
+
+    <div class="card shadow-sm mb-4" style="background-color: var(--accent-color);">
+        <div class="card-body">
+            <h4 class="card-title text-light">Your Actual Lines</h4>
+            <form method="POST" action="{{ url_for('generate_and_process_register') }}" id="generate-form">
+                <div class="mb-3">
+                    <input type="checkbox" id="select-all" /> <label class = "text-light" for="select-all">Select All/Deselect All</label>
+                </div>
+                <div class = "bg-info" style="overflow-x:auto;">
+                    <table class="table table-hover" id = "table_id">
+                        <thead>
+                            <tr>
+                                <th>Select</th>
+                                <th>REGISTER_NAME</th>
+                                <th>FIELD</th>
+                                <th>OFFSET</th>
+                                <th>LSB</th>
+                                <th>WIDTH</th>
+                                <th>INIT_VALUE</th>
+                                <th>ACCESS_MODE</th>
+                                <th>TAG</th>
+                                <th>Description</th>
+                                <th>Edit</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="register-list">
+                            {% for register in registers %}
+                            <tr>
+                                <td><input type="checkbox" name="selected_registers" value="{{ register.id }}"></td>
+                                <td>{{ register.register_name }}</td>
+                                <td>{{ register.field }}</td>
+                                <td>{{ register.offset }}</td>
+                                <td>{{ register.lsb }}</td>
+                                <td>{{ register.width }}</td>
+                                <td>{{ register.init_value }}</td>
+                                <td>{{ register.access_mode }}</td>
+                                <td>{{ register.tag }}</td>
+                                <td>{{ register.description }}</td>
+                                <td>
+                                    <a href="{{ url_for('edit_register', register_id=register.id) }}" class="btn btn-sm btn-warning me-1">Edit</a>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('delete_register', register_id=register.id) }}" class="btn btn-sm btn-warning me-1">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <h3 class="card-title text-light mt-4">Generate and Process File</h3>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="file_format" class="form-label text-light">Save as</label>
+                        <select class="form-select" id="file_format" name="file_format" required>
+                            <option value="json" {% if form_data and form_data['file_format'] == 'json' %}selected{% endif %}>JSON</option>
+                            <option value="txt" {% if form_data and form_data['file_format'] == 'txt' %}selected{% endif %}>TXT</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="axiaddr_w" class="form-label text-light">AXI Address Width</label>
+                        <input type="text" class="form-control" id="axiaddr_w" name="axiaddr_w" placeholder="Enter AXI Address Width" value="{{ form_data['axiaddr_w'] if form_data else '' }}" required>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="axidata_w" class="form-label text-light">AXI Data Width</label>
+                        <input type="text" class="form-control" id="axidata_w" name="axidata_w" placeholder="Enter AXI Data Width" value="{{ form_data['axidata_w'] if form_data else '' }}" required>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="baseaddress" class="form-label text-light">Base Address</label>
+                        <input type="text" class="form-control" id="baseaddress" name="baseaddress" placeholder="Enter Base Address" value="{{ form_data['baseaddress'] if form_data else '' }}" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success mt-3">Generate and Process File</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Select All/Deselect All functionality
+    document.getElementById('select-all').addEventListener('change', function(event) {
+        const checkboxes = document.querySelectorAll('input[name="selected_registers"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = event.target.checked;
+        });
+    });
+
+    document.getElementById('generate-form').addEventListener('submit', function(event) {
+        const selectedRegisters = document.querySelectorAll('input[name="selected_registers"]:checked');
+        if (selectedRegisters.length === 0) {
+            alert('Please select at least one register.');
+            event.preventDefault();
+            return false;
+        }
+
+        selectedRegisters.forEach(function(register) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'selected_registers';
+            input.value = register.value;
+            event.target.appendChild(input);
+        });
+    });
+    $(document).ready( function () {
+        $('#table_id').DataTable();
+    });
+</script>
+<style>
+    .content-wrapper {
+        max-width: 1200px !important; /* Adjust as needed */
+        margin: 0 auto;
+        text-align: center;
+    }
+</style>
+{% endblock %}
